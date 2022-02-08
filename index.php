@@ -1,5 +1,7 @@
 <?php
- $units = 500 ;
+
+ $units = 40 ;
+ 
  if( $units <= 50){
      echo 'electricity bill is ' ,$units*3.50;
  }else if ($units > 50 && $units <= 150 ){
