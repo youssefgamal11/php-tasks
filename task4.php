@@ -1,22 +1,67 @@
 <?php 
+session_start();
+
+function clean($input , $ispassword = 0){
+    $input = trim($input);
+    if($ispassword == 0){
+    $input = htmlspecialchars($input);}
+
+    return $input ;
+
+    
+}
 if($_SERVER['REQUEST_METHOD'] == 'POST'){
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $name = clean($_POST['name']);
+    $email = clean($_POST['email']);
+    $password = clean($_POST['password'] , 1);
     $address = $_POST['address'];
     $Linkedin = $_POST['Linkedin'];
+    $gender = clean($_POST['gender']);
     $errors = [];
 
-    $cleanName = htmlspecialchars($name);;
-    $cleanEmail = htmlspecialchars($email);
-    $cleanAddress = htmlspecialchars($address);
-    //error
-    // $cleanLinkedIn = filter_var($Linkedin , FILTER_SANITIZE_URL);
+    // $cleanName = htmlspecialchars($name);;
+    // $cleanEmail = htmlspecialchars($email);
+    // $cleanAddress = htmlspecialchars($address);
 
-     if(empty($cleanName)){
+
+    if (!empty($_FILES['image']['name'])) {
+
+        $imgName  = $_FILES['image']['name'];
+        $imgTemp  = $_FILES['image']['tmp_name'];
+        $imgType  = $_FILES['image']['type']; 
+
+        $nameArray =  explode('.', $imgName);
+        $imgExtension =  strtolower(end($nameArray));
+
+        $imgFinalName = time() . rand() . '.' . $imgExtension;
+
+
+
+        $allowedExt = ['png', 'jpg'];
+
+        if (in_array($imgExtension, $allowedExt)) {
+
+            $disPath = 'uploads/' . $imgFinalName;
+
+            if (move_uploaded_file($imgTemp, $disPath)) {
+                echo 'File Uploaded' . '<br>';
+            } else {
+                echo 'Error In Uploading Try Again' . '<br>';
+            }
+        } else {
+            echo 'InValid Extension'. '<br>';
+        }
+    } else {
+
+        echo ' * Image Required' . '<br>';
+    }
+
+   
+
+     if(empty($name)){
         $errors['name'] = 'name string';
     }
-    if(empty($cleanEmail)){
+    if(empty($email)){
         $errors['email'] = 'email required';
     }
     if(empty($password)){
@@ -25,7 +70,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
         $errors['Password'] = "Length Must be >= 6 chars";
     }
 
-    if(empty($cleanAddress)){
+    if(empty($address)){
         $errors['address'] = 'address required';
     }else if(strlen($address) < 10){
         $errors ['address'] = 'address must not be less than 10';
@@ -34,6 +79,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     if(empty($Linkedin)){
         $errors['Linkedin'] = 'Linkedin required' ;
     }
+    if(empty($gender)){
+        $errors['gender'] = 'gender required' ;
+    }
 
     if(count($errors) > 0){
         foreach($errors as $key  => $value){
@@ -41,13 +89,14 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
         }
     }else {
         echo 'valid data' ;
+        $_SESSION['userData'] =['name' =>$name , 'email'=>$email ,'password'=>$password , 'address'=>$address ,'linkedin'=>$Linkedin ,'gender' =>$gender ];
+
     }
 
 
 
-
-
 }
+
 
 ?>
 
@@ -68,7 +117,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     <div class="container">
         <h2>Register</h2>
       
-        <form action="<?php echo $_SERVER['PHP_SELF'];?>" method="post"  >
+        <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>" method="post"  enctype="multipart/form-data">
 
             <div class="form-group">
                 <label for="exampleInputName">Name</label>
@@ -95,6 +144,14 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
             <div class="form-group">
                 <label for="exampleInputEmail">linkedIn URL</label>
                 <input type="text" class="form-control" id="exampleInputLinkedin" aria-describedby="urlHelp" name="Linkedin" placeholder="Enter Linkedin">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputgender">Gender</label>
+                <input type="text" class="form-control" id="exampleInputgender" aria-describedby="urlHelp" name="gender" placeholder="Enter your gender">
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword">Image</label>
+                <input type="file" name="image">
             </div>
 
             <button type="submit" class="btn btn-primary">Submit</button>
